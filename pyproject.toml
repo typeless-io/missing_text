@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=75.1.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "missing-text"
+version = "0.0.1-alpha"
+description = "A package purpose built for simplifying document processing for LLM based application development"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Maruthi", email = "maruthi@typeless.io"}, {name = "Bryan", email = "bryan.leezc@gmail.com"}
+]
+dependencies = [
+    "fastapi>=0.115.0",
+    "pydantic>=2.9.2",
+    "pymupdf>=1.24.11",
+    "pytesseract>=0.3.13",
+    "python-multipart>=0.0.12",
+    "uvicorn>=0.31.0",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License :: 2.0",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["missing_text*"]
+exclude = ["tests*", "docs*", "scrapy*"]
+
+[project.urls]
+Homepage = "https://github.com/typeless-io/missing_text"
+
+[project.scripts]
+run-app = "missing_text.main:run"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest-cov>=5.0.0",
+    "pytest>=8.3.3",
+    "ruff>=0.6.9",
+    "setuptools>=75.1.0",
+    "twine>=5.1.1",
+    "wheel>=0.44.0",
+]

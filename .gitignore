@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Ignore the uv package manager files
+uv.lock
+uv.config
+
 # Distribution / packaging
 .Python
 build/
@@ -120,6 +124,11 @@ celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
+
+# Local folders that we can use to keep things we don't want to commit
+scrapy
+references
+output
 
 # Environments
 .env
