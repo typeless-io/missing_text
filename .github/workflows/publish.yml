@@ -1,8 +1,8 @@
 name: Publish Missing Text
-
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - main
 
 jobs:
   build-n-publish:
@@ -21,7 +21,10 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Set up Python
-        run: uv python install 3.11
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Create Virtual Environment
+        run: uv venv
 
       - name: Install dependencies
         run: uv pip install -r pyproject.toml
