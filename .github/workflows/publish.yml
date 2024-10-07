@@ -8,6 +8,9 @@ jobs:
   build-n-publish:
     name: Publish Missing Text
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     strategy:
       matrix:
         python-version:
