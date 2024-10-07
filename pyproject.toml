@@ -44,4 +44,5 @@ dev-dependencies = [
     "setuptools>=75.1.0",
     "twine>=5.1.1",
     "wheel>=0.44.0",
+    "pre-commit>=4.0.0",
 ]
