@@ -1,16 +1,11 @@
 # missing_text
 
-The beginning to endless possibilities... ❤️
-
-## Table of Contents
+A package purpose built for simplifying document processing for LLM based application development
 
 - [missing\_text](#missing_text)
-  - [Table of Contents](#table-of-contents)
   - [Description](#description)
   - [Installation](#installation)
   - [Usage](#usage)
-- [Start of Selection](#start-of-selection)
-- [End of Selection](#end-of-selection)
   - [Development](#development)
   - [Testing](#testing)
   - [Contributing](#contributing)
@@ -18,7 +13,7 @@ The beginning to endless possibilities... ❤️
 
 ## Description
 
-missing_text is an open-source project that [brief description of what the project does]. It aims to [main goal or purpose of the project].
+missing_text is an open-source project that purpose built for simplifying document processing for LLM based application development. It aims to make it easy to ingest documents, extract text and metadata, and prepare the data for training or inference or storage to be used in an LLM based application, so that developers can focus on building their application.
 
 ## Installation
 
@@ -56,11 +51,7 @@ result = hello_missing()
 print(result)
 ```
 
-# Start of Selection
-
 For more detailed usage instructions, please refer to the [documentation](docs/README.md).
-
-# End of Selection
 
 ## Development
 

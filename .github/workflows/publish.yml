@@ -1,5 +1,8 @@
 name: Publish Missing Text
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -42,6 +45,7 @@ jobs:
         run: uv run python -m build
 
       - name: Publish to PyPI
+        if: matrix.python-version == '3.10'
         uses: pypa/gh-action-pypi-publish@v1.8.10
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
