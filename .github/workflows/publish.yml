@@ -1,6 +1,6 @@
 name: Publish Missing Text
 on:
-  push:
+  pull_request:
     branches:
       - main
 
