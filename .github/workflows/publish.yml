@@ -1,11 +1,9 @@
 name: Publish Missing Text
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
+    types: [closed]
 
 jobs:
   build-n-publish:
