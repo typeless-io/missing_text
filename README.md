@@ -2,15 +2,6 @@
 
 A package purpose built for simplifying document processing for LLM based application development
 
-- [missing\_text](#missing_text)
-  - [Description](#description)
-  - [Installation](#installation)
-  - [Usage](#usage)
-  - [Development](#development)
-  - [Testing](#testing)
-  - [Contributing](#contributing)
-  - [License](#license)
-
 ## Description
 
 missing_text is an open-source project that purpose built for simplifying document processing for LLM based application development. It aims to make it easy to ingest documents, extract text and metadata, and prepare the data for training or inference or storage to be used in an LLM based application, so that developers can focus on building their application.
@@ -106,6 +97,8 @@ We welcome contributions to missing_text! Here's how you can contribute:
 5. Submit a pull request with a clear description of your changes.
 
 Please read our [Contributing Guidelines](CONTRIBUTING.md) for more details.
+
+For any other queries, please reach out to us at maruthi@typeless.io
 
 ## License
 
