@@ -44,6 +44,55 @@ print(result)
 
 For more detailed usage instructions, please refer to the [documentation](docs/README.md).
 
+## CLI Usage
+
+After installing the package, you can use the CLI as follows:
+
+```bash
+# Run the hello_missing function
+missing run
+
+# Run with a custom name
+missing run --name Alice
+
+# Show the version
+missing version
+
+# Start a FastAPI server
+missing fastapi
+
+# Start a FastAPI server with custom host and port
+missing fastapi --host 0.0.0.0 --port 5000
+
+# Show help
+missing --help
+```
+
+The FastAPI server can be configured using environment variables or command-line arguments:
+
+- `MISSING_FAST_API_HOST`: Sets the host for the FastAPI server (default: 0.0.0.0)
+- `MISSING_FAST_API_PORT`: Sets the port for the FastAPI server (default: 8000)
+
+You can set these in a `.env` file in your project root or as system environment variables.
+
+Command-line arguments will override environment variables:
+
+```bash
+#
+```
+
+The FastAPI server will have two endpoints:
+
+- `/`: Returns a welcome message
+- `/hello/{name}`: Returns the result of `hello_missing(name)`
+
+You can access these endpoints in your browser or using tools like curl:
+
+```bash
+curl http://localhost:8000/
+curl http://localhost:8000/hello/Alice
+```
+
 ## Development
 
 To set up the development environment:
