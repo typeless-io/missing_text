@@ -1,9 +1,10 @@
 import click
 from .hello_missing import hello_missing
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 import os
 from dotenv import load_dotenv
+from .routers import extract
 
 # Load environment variables from .env file if it exists
 load_dotenv()
@@ -43,9 +44,8 @@ def fastapi(host, port):
     async def root():
         return {"message": "Welcome to Missing Text API"}
 
-    @app.get("/hello/{name}")
-    async def hello(name: str = "World"):
-        return {"message": hello_missing(name)}
+        # Include routers
+    app.include_router(extract.router)
 
     click.echo(f"Starting FastAPI server on http://{host}:{port}")
     uvicorn.run(app, host=host, port=port)
