@@ -27,8 +27,7 @@ This project uses the UV package manager. To install missing_text, follow these 
    ```bash
    uv venv
    source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
-   uv install  # Install primary dependencies
-   uv install --group dev # Install development dependencies
+   uv pip install -r pyproject.toml  # Install primary dependencies
    ```
 
 ## Usage
@@ -66,6 +65,12 @@ missing fastapi --host 0.0.0.0 --port 5000
 
 # Show help
 missing --help
+
+#The Streamlit app provides a user-friendly interface to test out the features of Missing Text. To run the Streamlit app, use the following command:
+missing streamlit
+
+# Start the Streamlit App with custom host and port
+missing streamlit --host 0.0.0.0 --port 8501
 ```
 
 The FastAPI server can be configured using environment variables or command-line arguments:
@@ -98,9 +103,10 @@ curl http://localhost:8000/hello/Alice
 To set up the development environment:
 
 1. Follow the installation steps above.
-2. Install development dependencies:
+2. Install primary and development dependencies:
    ```bash
-   uv pip install -r requirements-dev.txt
+   uv pip install -r pyproject.toml  # Install primary dependencies
+   uv pip install -r pyproject.toml --extra dev # Install development dependencies
    ```
 3. Install pre-commit hooks:
    ```bash
@@ -118,6 +124,23 @@ To set up the development environment:
    ```bash
    uv install --editable .
    ```
+7. To add primary dependencies
+   ```bash
+   uv add <package-name>
+   ```
+8. To remove primary dependencies
+   ```bash
+   uv remove <package-name>
+   ```
+9. To add dev dependencies
+   ```bash
+   uv add <package-name> --optional dev
+   ```
+10. To remove dev dependencies
+
+```bash
+uv remove <package-name> --optional dev
+```
 
 ## Testing
 

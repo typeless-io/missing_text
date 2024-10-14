@@ -126,9 +126,9 @@ celerybeat.pid
 *.sage.py
 
 # Local folders that we can use to keep things we don't want to commit
-scrapy
-references
-output
+scrapy/
+references/
+output/
 
 # Environments
 .env

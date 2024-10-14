@@ -2,15 +2,18 @@
 import json
 from decimal import Decimal
 
+
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
             return float(obj)
         return super(DecimalEncoder, self).default(obj)
 
+
 # utils.py
 import json
 from typing import Dict, Any
+
 
 def save_extracted_content(extracted_content: Dict[str, Any], filename: str) -> None:
     """
