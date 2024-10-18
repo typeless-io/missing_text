@@ -92,6 +92,16 @@ def test_streamlit_app_no_file(
 
     # Check if the file uploader was called
     mock_file_uploader.assert_called_once_with("Choose a PDF file", type="pdf")
+    
+    # Check for all expected warnings, excluding extra `call.call()` entries
+    actual_calls = [call[0][0] for call in mock_warning.call_args_list]
 
-    # Check that the warning message is displayed when no PDF is processed
-    mock_warning.assert_called_once_with("Please upload a PDF file before processing.")
+    expected_warnings = [
+        "Please upload a PDF file before processing.",
+        "No images extracted. Please process a PDF first.",
+        "No OCR text available. Please process a PDF first."
+    ]
+
+    # Assert that each expected warning is in the actual calls
+    for expected_warning in expected_warnings:
+        assert expected_warning in actual_calls, f"Expected warning '{expected_warning}' not found."

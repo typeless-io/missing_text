@@ -42,74 +42,102 @@ def main():
                 with st.spinner("Extracting content..."):
                     pdf_content = sync_extract_pdf(uploaded_file.getvalue())
                     st.session_state.pdf_content = pdf_content
+                    st.session_state.total_pages = len(pdf_content["pages"])
                 st.success(
                     "PDF processed successfully. Navigate to other tabs to view the results."
                 )
 
     with tabs[1]:
         st.header("Extracted Text")
-        if st.session_state.pdf_content and "text" in st.session_state.pdf_content:
+        if st.session_state.pdf_content and "pages" in st.session_state.pdf_content:
             # Split the text into pages
-            pages = st.session_state.pdf_content["text"].split("\f")
-            for i, page_text in enumerate(pages):
-                st.subheader(f"Page {i+1}")
+            
+            # Iterate over each page
+            for i in range(st.session_state.total_pages):
+                st.subheader(f"Page {i + 1}")
                 col1, col2 = st.columns(2)
+
                 with col1:
-                    if (
-                        "pages" in st.session_state.pdf_content
-                        and len(st.session_state.pdf_content["pages"]) > i
-                    ):
-                        page_image = st.session_state.pdf_content["pages"][i]["image"]
-                        st.image(
-                            base64.b64decode(page_image),
-                            caption=f"Original Page {i+1}",
-                            use_column_width=True,
-                        )
+                    if "images" in st.session_state.pdf_content["pages"][i]:
+                        page_images = st.session_state.pdf_content["pages"][i]["images"]
+                        
+                        # Iterate over each image in the list
+                        for j, image in enumerate(page_images):
+                            image_data = image["image_data"]  # Assuming each image has an "image_data" field
+                            st.image(
+                                base64.b64decode(image_data),
+                                caption=f"Page {i + 1} - Image {j + 1}",
+                                use_column_width=True,
+                            )
+                    else:
+                        st.info(f"No image found for Page {i + 1}")
+
+                # Column 2: Display the extracted text
                 with col2:
+                    page_text = st.session_state.pdf_content["pages"][i].get("text", "No text extracted.")
                     st.text_area(
-                        label=f"Page {i+1} Content",
+                        label=f"Page {i + 1} Content",
                         value=page_text.strip(),
                         height=400,
                         key=f"text_{i}",
                     )
-        else:
-            st.warning("No text content extracted. Please process a PDF first.")
 
     with tabs[2]:
         st.header("Extracted Tables")
-        if st.session_state.pdf_content and "tables" in st.session_state.pdf_content:
-            for i, table in enumerate(st.session_state.pdf_content["tables"]):
-                st.subheader(f"Table {i+1}")
-                st.dataframe(table["content"])
+        if st.session_state.pdf_content and "pages" in st.session_state.pdf_content:
+            # Iterate over each page
+            for i in range(st.session_state.total_pages):
+                if "tables" in st.session_state.pdf_content["pages"][i]:
+                    page_tables = st.session_state.pdf_content["pages"][i]["tables"]
+                    
+                    # Iterate over each image in the list
+                    for j, tables in enumerate(page_tables):
+                        st.subheader(f"Page {i + 1}, Table {j + 1}")
+                        st.dataframe(tables["content"])
+
+                else:
+                    st.info(f"No image found for Page {i + 1}")
+
         else:
             st.warning("No tables extracted. Please process a PDF first.")
 
     with tabs[3]:
         st.header("Extracted Images")
-        if st.session_state.pdf_content and "images" in st.session_state.pdf_content:
-            for i, image in enumerate(st.session_state.pdf_content["images"]):
-                st.subheader(f"Image {i+1}")
-                image_data = base64.b64decode(image["image_data"])
-                st.image(
-                    Image.open(io.BytesIO(image_data)),
-                    caption=f"Extracted Image {i+1}",
-                    use_column_width=True,
-                )
+        if st.session_state.pdf_content and "pages" in st.session_state.pdf_content:
+            for i in range(st.session_state.total_pages):
+                if "images" in st.session_state.pdf_content["pages"][i]:
+                    page_images = st.session_state.pdf_content["pages"][i]["images"]
+                    for j, image in enumerate(page_images):
+                        st.subheader(f"Page {i + 1}, Image {j + 1}")
+                        image_data = base64.b64decode(image["image_data"])
+                        st.image(
+                            Image.open(io.BytesIO(image_data)),
+                            caption=f"Extracted Image {i+1}",
+                            use_column_width=True,
+                        )
+                else:
+                    st.warning("No images extracted. Please process a PDF first.")
         else:
             st.warning("No images extracted. Please process a PDF first.")
 
+
     with tabs[4]:
         st.header("Image OCR")
-        if st.session_state.pdf_content and "images" in st.session_state.pdf_content:
-            for i, image in enumerate(st.session_state.pdf_content["images"]):
-                st.subheader(f"Image {i+1} OCR")
-                st.text_area(
-                    label=f"OCR Text for Image {i+1}",
-                    value=image["content"],
-                    height=200,
-                )
+        if st.session_state.pdf_content and "pages" in st.session_state.pdf_content:
+            for i in range(st.session_state.total_pages):
+                if "images" in st.session_state.pdf_content["pages"][i]:
+                    page_images = st.session_state.pdf_content["pages"][i]["images"]
+                    for j, image in enumerate(page_images):
+                        st.subheader(f"Page {i + 1}, Image {j + 1} OCR")
+                        st.text_area(
+                            label=f"OCR Text for Page {i + 1}, Image {j + 1}",
+                            value=image["content"],
+                            height=200,
+                        )
+                else:
+                    st.warning("No OCR text available. Please process a PDF first.")
         else:
-            st.warning("No OCR text available. Please process a PDF first.")
+            st.warning("No images extracted. Please process a PDF first.")
 
     with tabs[5]:
         st.header("PDF Segments")
