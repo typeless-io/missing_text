@@ -122,7 +122,7 @@ To set up the development environment:
    ```
 6. Install the package in editable mode:
    ```bash
-   uv install --editable .
+   uv pip install --editable .
    ```
 7. To add primary dependencies
    ```bash

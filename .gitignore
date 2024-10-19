@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+# Ruff
+.ruff_cache/
 # Ignore the uv package manager files
 uv.lock
 uv.config
