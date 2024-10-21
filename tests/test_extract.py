@@ -47,9 +47,26 @@ def test_sync_extract_pdf_bytes(mock_pdf_bytes):
 
     # Assertions
     assert isinstance(extracted_content, dict)
-    assert "pages" in extracted_content
-    assert len(extracted_content["pages"]) == 2  # Simulate extracting 2 pages
-    print(extracted_content)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2  # Simulate extracting 2 pages
+
+def test_sync_extract_pdf_bytes_with_params(mock_pdf_bytes):
+    """Test sync extraction with byte content."""
+    content = mock_pdf_bytes.getvalue()
+
+    # Mock pymupdf.open to return the mock document
+    with mock.patch("pymupdf.open", return_value=create_mock_document()):
+        # Call the sync_extract_pdf function with bytes
+        extracted_content = sync_extract_pdf(content, text=False, table=False, image=False)
+
+    # Assertions
+    assert isinstance(extracted_content, dict)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2  # Simulate extracting 2 pages
+    for content in extracted_content["contents"]:
+        assert "text" not in content
+        assert "images" not in content
+        assert "tables" not in content
 
 
 def test_sync_extract_pdf_file_path():
@@ -62,11 +79,28 @@ def test_sync_extract_pdf_file_path():
 
     # Assertions
     assert isinstance(extracted_content, dict)
-    assert "pages" in extracted_content
-    assert len(extracted_content["pages"]) == 2  # Simulate extracting 2 pages
-    print(extracted_content)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2  # Simulate extracting 2 pages
 
 
+def test_sync_extract_pdf_with_params():
+    """Test sync extraction with file path."""
+    with mock.patch.object(Path, "is_file", return_value=True):
+        with mock.patch("pathlib.Path.exists", return_value=True):
+            with mock.patch("pymupdf.open", return_value=create_mock_document()):
+                # Call the sync_extract_pdf function with a fake file path
+                extracted_content = sync_extract_pdf("fake_path.pdf", text = False, table = False, image = False)
+    
+    # Assertions
+    assert isinstance(extracted_content, dict)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2  # Simulate extracting 2 pages
+    for content in extracted_content["contents"]:
+        assert "text" not in content
+        assert "images" not in content
+        assert "tables" not in content
+
+        
 # === ASYNC TEST CASES ===
 
 
@@ -82,10 +116,28 @@ async def test_async_extract_pdf_bytes(mock_pdf_bytes):
 
     # Assertions
     assert isinstance(extracted_content, dict)
-    assert "pages" in extracted_content
-    assert len(extracted_content["pages"]) == 2  # Simulate extracting 2 pages
-    print(extracted_content)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2  # Simulate extracting 2 pages
 
+
+@pytest.mark.asyncio
+async def test_async_extract_pdf_bytes_with_params(mock_pdf_bytes):
+    """Test async extraction with byte content."""
+    content = mock_pdf_bytes.getvalue()
+
+    # Mock pymupdf.open to return the mock document
+    with mock.patch("pymupdf.open", return_value=create_mock_document()):
+        # Call the async_extract_pdf function with bytes
+        extracted_content = await async_extract_pdf(content, text=False, table=False, image=False)
+
+    # Assertions
+    assert isinstance(extracted_content, dict)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2  # Simulate extracting 2 pages
+    for content in extracted_content["contents"]:
+        assert "text" not in content
+        assert "images" not in content
+        assert "tables" not in content
 
 @pytest.mark.asyncio
 async def test_async_extract_pdf_file_path():
@@ -98,9 +150,26 @@ async def test_async_extract_pdf_file_path():
 
     # Assertions
     assert isinstance(extracted_content, dict)
-    assert "pages" in extracted_content
-    assert len(extracted_content["pages"]) == 2  # Simulate extracting 2 pages
-    print(extracted_content)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2  # Simulate extracting 2 pages
+
+@pytest.mark.asyncio
+async def test_async_extract_pdf_with_params():
+    """Test sync extraction with file path."""
+    with mock.patch.object(Path, "is_file", return_value=True):
+        with mock.patch("pathlib.Path.exists", return_value=True):
+            with mock.patch("pymupdf.open", return_value=create_mock_document()):
+                # Call the sync_extract_pdf function with a fake file path
+                extracted_content = await async_extract_pdf("fake_path.pdf", text = False, table = False, image = False)
+    
+    # Assertions
+    assert isinstance(extracted_content, dict)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2  # Simulate extracting 2 pages
+    for content in extracted_content["contents"]:
+        assert "text" not in content
+        assert "tables" not in content
+        assert "images" not in content
 
 
 # === DYNAMIC TEST CASES ===
@@ -116,10 +185,24 @@ def test_extract_pdfs_sync_bytes(mock_pdf_bytes):
 
     # Assertions
     assert isinstance(extracted_content, dict)
-    assert "pages" in extracted_content
-    assert len(extracted_content["pages"]) == 2
-    print(extracted_content)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2
 
+
+def test_extract_pdfs_sync_bytes_with_params(mock_pdf_bytes):
+    """Test dynamic sync extraction with byte content."""
+    content = mock_pdf_bytes.getvalue()
+
+    # Mock pymupdf.open and file existence check
+    with mock.patch("pymupdf.open", return_value=create_mock_document()):
+        # No need to mock is_file for bytes input
+        # Call the extract_pdfs function directly (it will choose sync logic)
+        extracted_content = extract_pdfs(content, text=False, table=False, image=False)
+
+    # Assertions
+    assert isinstance(extracted_content, dict)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2
 
 def test_extract_pdfs_sync_file_path():
     """Test dynamic sync extraction with file path."""
@@ -130,9 +213,24 @@ def test_extract_pdfs_sync_file_path():
                 extracted_content = extract_pdfs("fake_path.pdf")
 
     assert isinstance(extracted_content, dict)
-    assert "pages" in extracted_content
-    assert len(extracted_content["pages"]) == 2
-    print(extracted_content)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2
+
+def test_extract_pdfs_sync_file_path_with_params():
+    """Test dynamic sync extraction with file path."""
+    with mock.patch.object(Path, "is_file", return_value=True):
+        with mock.patch("pathlib.Path.exists", return_value=True):
+            with mock.patch("pymupdf.open", return_value=create_mock_document()):
+                # Call the extract_pdfs function directly (it will choose sync logic)
+                extracted_content = extract_pdfs("fake_path.pdf", text=False, table=False, image=False)
+
+    assert isinstance(extracted_content, dict)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2
+    for content in extracted_content["contents"]:
+        assert "text" not in content
+        assert "tables" not in content
+        assert "images" not in content
 
 
 @pytest.mark.asyncio
@@ -146,9 +244,26 @@ async def test_extract_pdfs_async_bytes(mock_pdf_bytes):
         extracted_content = await extract_pdfs(content)
 
     assert isinstance(extracted_content, dict)
-    assert "pages" in extracted_content
-    assert len(extracted_content["pages"]) == 2
-    print(extracted_content)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2
+
+@pytest.mark.asyncio
+async def test_extract_pdfs_async_bytes_with_params(mock_pdf_bytes):
+    """Test dynamic async extraction with byte content."""
+    content = mock_pdf_bytes.getvalue()
+
+    with mock.patch("pymupdf.open", return_value=create_mock_document()):
+        # No need to mock is_file for bytes input
+        # Call the extract_pdfs function directly (it will choose async logic)
+        extracted_content = await extract_pdfs(content, text=False, table=False, image=False)
+
+    assert isinstance(extracted_content, dict)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2
+    for content in extracted_content["contents"]:
+        assert "text" not in content
+        assert "tables" not in content
+        assert "images" not in content
 
 
 @pytest.mark.asyncio
@@ -160,6 +275,22 @@ async def test_extract_pdfs_async_file_path():
                 # Call the extract_pdfs function directly (it will choose async logic)
                 extracted_content = await extract_pdfs("fake_path.pdf")
     assert isinstance(extracted_content, dict)
-    assert "pages" in extracted_content
-    assert len(extracted_content["pages"]) == 2
-    print(extracted_content)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2
+
+@pytest.mark.asyncio
+async def test_extract_pdfs_async_file_path_with_params():
+    """Test dynamic sync extraction with file path."""
+    with mock.patch.object(Path, "is_file", return_value=True):
+        with mock.patch("pathlib.Path.exists", return_value=True):
+            with mock.patch("pymupdf.open", return_value=create_mock_document()):
+                # Call the extract_pdfs function directly (it will choose sync logic)
+                extracted_content = await extract_pdfs("fake_path.pdf", text=False, table=False, image=False)
+
+    assert isinstance(extracted_content, dict)
+    assert "contents" in extracted_content
+    assert len(extracted_content["contents"]) == 2
+    for content in extracted_content["contents"]:
+        assert "text" not in content
+        assert "tables" not in content
+        assert "images" not in content

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Request
+from fastapi import APIRouter, UploadFile, File, HTTPException, Request, Query
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 import aiofiles
@@ -21,7 +21,7 @@ router = APIRouter()
 
 # Helper function to handle file processing (refactored to reduce duplication)
 async def process_pdf(
-    input_data, is_bytes: bool = False, safe_mode: bool = True
+    input_data, is_bytes: bool = False, safe_mode: bool = True, text: bool = True, table: bool = True, image: bool = True
 ) -> dict:
     file_location = None  # Initialize file_location for later use
     try:
@@ -29,7 +29,8 @@ async def process_pdf(
 
         if file_size <= FILE_SIZE_THRESHOLD:
             logging.info("Processing small data in-memory using async method.")
-            extracted_content = await async_extract_pdf(input_data, safe_mode=safe_mode)
+            extracted_content = await async_extract_pdf(input_data, safe_mode=safe_mode, text=text, table=table, image=image
+)
         else:
             logging.info(
                 "Processing large data using sync method with a temporary file."
@@ -44,7 +45,7 @@ async def process_pdf(
 
             # Run sync_extract_pdf in a thread pool asynchronously
             extracted_content = await run_in_threadpool(
-                sync_extract_pdf, file_location, safe_mode=safe_mode
+                sync_extract_pdf, file_location, safe_mode=safe_mode, text=text, table=table, image=image
             )
 
         return extracted_content
@@ -60,35 +61,62 @@ async def process_pdf(
 
 
 @router.post("/extract/pdf")
-async def extract_pdf(file: UploadFile = File(...), safe_mode: bool = True):
+async def extract_pdf(
+    file: UploadFile = File(...), 
+    safe_mode: bool = True,
+    text: bool = Query(True),
+    image: bool = Query(True),
+    table: bool = Query(True)
+):
     """
     Handles PDF extraction from uploaded files
 
     Args:
         file (UploadFile): The uploaded PDF file.
         safe_mode (bool, optional): Whether to enable safe mode for this extraction. Defaults to True.
+        text (bool, optional): Whether to extract text from the PDF. Defaults to True.
+        image (bool, optional): Whether to extract images from the PDF. Defaults to True.
+        table (bool, optional): Whether to extract tables from the PDF. Defaults to True.
     """
     file_content = await file.read()
-    return JSONResponse(content=await process_pdf(file_content, safe_mode=safe_mode))
+    return JSONResponse(
+        content=await process_pdf(file_content, safe_mode=safe_mode, text=text, table=table, image=image)
+    )
 
 
 @router.post("/extract/pdf-bytes")
-async def extract_pdf_bytes(request: Request, safe_mode: bool = True):
+async def extract_pdf_bytes(
+    request: Request, 
+    safe_mode: bool = True,  
+    text: bool = Query(True),
+    image: bool = Query(True),
+    table: bool = Query(True)
+):
     """
     Handles PDF extraction from byte streams
 
     Args:
         request (Request): The incoming request containing PDF bytes.
         safe_mode (bool, optional): Whether to enable safe mode for this extraction. Defaults to True.
+        text (bool, optional): Whether to extract text from the PDF. Defaults to True.
+        image (bool, optional): Whether to extract images from the PDF. Defaults to True.
+        table (bool, optional): Whether to extract tables from the PDF. Defaults to True.
+
     """
     byte_data = await request.body()
     return JSONResponse(
-        content=await process_pdf(byte_data, is_bytes=True, safe_mode=safe_mode)
+        content=await process_pdf(byte_data, is_bytes=True, safe_mode=safe_mode, text=text, table=table, image=image)
     )
 
 
 @router.post("/extract/pdf-path")
-async def extract_pdf_path(file_path: str, safe_mode: bool = True):
+async def extract_pdf_path(
+    file_path: str, 
+    safe_mode: bool = True,
+    text: bool = Query(True),
+    image: bool = Query(True),
+    table: bool = Query(True)
+):
     """
     Handles PDF extraction using a file path or directory path.
 
@@ -110,7 +138,7 @@ async def extract_pdf_path(file_path: str, safe_mode: bool = True):
             )
 
         # Call the dynamic extract_pdfs function (handles both files and directories)
-        extracted_content = await extract_pdfs(str(path), safe_mode=safe_mode)
+        extracted_content = await extract_pdfs(str(path), safe_mode=safe_mode, text=text, table=table, image=image)
         return JSONResponse(content=extracted_content)
 
     except PDFProcessingError as e:

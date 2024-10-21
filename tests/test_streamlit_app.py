@@ -38,12 +38,36 @@ def test_streamlit_app(
     mock_button.return_value = True
 
     # Mock the PDF extraction function with correctly formatted base64 images
+    # mock_sync_extract_pdf.return_value = {
+    #     "text": "Sample extracted text",
+    #     "tables": [{"content": [{"col1": "data1", "col2": "data2"}]}],
+    #     "images": [
+    #         {"image_data": VALID_BASE64_IMAGE, "content": "OCR text"}
+    #     ],  # No data URI prefix
+    #     "segments": [
+    #         {
+    #             "segments": [
+    #                 {
+    #                     "type": "text",
+    #                     "content": "Sample segment",
+    #                     "bbox": [0, 0, 100, 100],
+    #                 }
+    #             ]
+    #         }
+    #     ],
+    #     "pages": [{"image": VALID_BASE64_IMAGE}],  # No data URI prefix
+    # }
+
     mock_sync_extract_pdf.return_value = {
-        "text": "Sample extracted text",
-        "tables": [{"content": [{"col1": "data1", "col2": "data2"}]}],
-        "images": [
-            {"image_data": VALID_BASE64_IMAGE, "content": "OCR text"}
-        ],  # No data URI prefix
+        "contents": [
+            {
+                "text": "Sample extracted text",  # Text extracted from the PDF page
+                "tables": [{"content": [{"col1": "data1", "col2": "data2"}]}],  # Sample table data
+                "images": [
+                    {"image_data": VALID_BASE64_IMAGE, "content": "OCR text"}
+                ],  # Correct base64-encoded image with data URI prefix
+            }
+        ],
         "segments": [
             {
                 "segments": [
@@ -55,7 +79,7 @@ def test_streamlit_app(
                 ]
             }
         ],
-        "pages": [{"image": VALID_BASE64_IMAGE}],  # No data URI prefix
+        "contents": [{"image": VALID_BASE64_IMAGE}],  # No data URI prefix
     }
 
     # Run the main function of the Streamlit app

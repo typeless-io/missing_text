@@ -154,12 +154,20 @@ def validate_path(file_path: Union[str, Path], safe_mode: bool = True) -> Path:
     """Validate and resolve the given file path."""
     path = Path(file_path).resolve()
     if safe_mode:
+        # If it's a directory, no need to check for file extension
+        if path.is_dir():
+            if not path.is_relative_to(SAFE_MODE_CONFIG.base_directory):
+                raise PDFProcessingError(f"Access denied: {path} is outside the allowed directory.")
+            return path
+
+        # Check if the file is within the safe root directory
         if not path.is_relative_to(SAFE_MODE_CONFIG.base_directory):
-            raise PDFProcessingError(
-                f"Access denied: {path} is outside the allowed directory."
-            )
+            raise PDFProcessingError(f"Access denied: {path} is outside the allowed directory.")
+
+        # Validate file extension if it's a file
         if path.suffix.lower() not in SAFE_MODE_CONFIG.allowed_extensions:
             raise PDFProcessingError(f"Invalid file type: {path.suffix}")
+
     return path
 
 
@@ -182,7 +190,7 @@ def with_safe_mode(func):
 
 @with_safe_mode
 def sync_extract_pdf(
-    input_data: Union[bytes, str, Path], safe_mode: bool = True
+    input_data: Union[bytes, str, Path], safe_mode: bool = True, text: bool = True, table: bool = True, image: bool = True
 ) -> Dict[str, Any]:
     """
     Extracts page-separated text, images, and tables from the given PDF file (synchronously).
@@ -204,20 +212,23 @@ def sync_extract_pdf(
             doc = pymupdf.open(str(file_path))
 
         total_pages = _get_page_count(doc)
-        extracted_content = {"pages": []}
+        extracted_content = {"contents": []}
 
         for page_num in range(total_pages):
             page = doc[page_num]
             logger.info(f"Processing page {page_num + 1}/{total_pages}")
+            page_content = {}
 
-            # Extract text, tables, and images for the current page
-            page_content = {
-                "text": _extract_text_from_page(page),
-                "tables": _extract_tables_from_page(page),
-                "images": _extract_images_from_page(page, doc),
-            }
+            if text:
+                page_content["text"] = _extract_text_from_page(page)
+            if table:
+                page_content["tables"] = _extract_tables_from_page(page)
+            if image:
+                page_content["images"] = _extract_images_from_page(page, doc)
+            
+            page_content["page"] = page_num + 1
 
-            extracted_content["pages"].append(page_content)
+            extracted_content["contents"].append(page_content)
 
         logger.info("PDF processing complete")
         return extracted_content
@@ -232,7 +243,7 @@ def sync_extract_pdf(
 
 
 def sync_extract_pdfs_from_directory(
-    directory_path: Union[str, Path], safe_mode: bool = True
+    directory_path: Union[str, Path], safe_mode: bool = True, text: bool = True, table: bool = True, image: bool = True
 ) -> Dict[str, List[Dict[str, Any]]]:
     """
     Synchronously extracts content from all PDF files in a given directory and its subdirectories.
@@ -251,7 +262,7 @@ def sync_extract_pdfs_from_directory(
 
     for file_path in traverse_directory(directory_path, safe_mode=safe_mode):
         try:
-            extracted_content = sync_extract_pdf(file_path, safe_mode=safe_mode)
+            extracted_content = sync_extract_pdf(file_path, safe_mode=safe_mode, text=text, table=table, image=image)
             extracted_data[str(file_path.relative_to(directory_path))] = (
                 extracted_content
             )
@@ -263,40 +274,11 @@ def sync_extract_pdfs_from_directory(
 
     return extracted_data
 
-
-# def extract_pdfs(input_path: Union[str, bytes]) -> Union[Dict[str, Any], Dict[str, List[Dict[str, Any]]]]:
-#     """
-#     Dynamically processes either a single PDF file or all PDFs in a directory.
-
-#     Args:
-#         input_path (Union[str, bytes]): Path to a PDF file, directory, or in-memory PDF bytes.
-
-#     Returns:
-#         Union[Dict[str, Any], Dict[str, List[Dict[str, Any]]]]:
-#         - If a single PDF, returns extracted content for that PDF.
-#         - If a directory, returns a dictionary where each key is a PDF file name, and the value is its extracted content.
-#     """
-#     if isinstance(input_path, bytes):
-#         # Process in-memory PDF bytes
-#         return sync_extract_pdf(input_path)
-
-#     elif os.path.isdir(input_path):
-#         # Process all PDFs in a directory
-#         return sync_extract_pdfs_from_directory(input_path)
-
-#     elif os.path.isfile(input_path) and input_path.endswith(".pdf"):
-#         # Process a single PDF file
-#         return sync_extract_pdf(input_path)
-
-#     else:
-#         raise PDFProcessingError(f"Invalid input: {input_path} is neither a valid PDF file nor a directory.")
-
-
 ### ASYNCHRONOUS FUNCTIONS ###
 
 
 async def async_extract_pdf(
-    input_data: Union[bytes, str, Path], safe_mode: bool = True
+    input_data: Union[bytes, str, Path], safe_mode: bool = True, text: bool = True, table: bool = True, image: bool = True
 ) -> Dict[str, Any]:
     """
     Asynchronously extracts page-separated text, images, and tables from a PDF file.
@@ -318,20 +300,23 @@ async def async_extract_pdf(
             doc = pymupdf.open(str(file_path))
 
         total_pages = _get_page_count(doc)
-        extracted_content = {"pages": []}
+        extracted_content = {"contents": []}
 
-        for i in range(total_pages):
-            page = doc[i]
-            logger.info(f"Processing page {i + 1}/{total_pages}")
+        for page_num in range(total_pages):
+            page = doc[page_num]
+            logger.info(f"Processing page {page_num + 1}/{total_pages}")
+            page_content = {}
 
-            # Extract text, tables, and images for the current page
-            page_content = {
-                "text": _extract_text_from_page(page),
-                "tables": _extract_tables_from_page(page),
-                "images": _extract_images_from_page(page, doc),
-            }
+            if text:
+                page_content["text"] = _extract_text_from_page(page)
+            if table:
+                page_content["tables"] = _extract_tables_from_page(page)
+            if image:
+                page_content["images"] = _extract_images_from_page(page, doc)
+            
+            page_content["page"] = page_num + 1
 
-            extracted_content["pages"].append(page_content)
+            extracted_content["contents"].append(page_content)
 
             await asyncio.sleep(0)  # Yield control back to the event loop
 
@@ -348,7 +333,7 @@ async def async_extract_pdf(
 
 
 async def async_extract_pdfs_from_directory(
-    directory_path: Union[str, Path], safe_mode: bool = True
+    directory_path: Union[str, Path], safe_mode: bool = True, text: bool = True, table: bool = True, image: bool = True
 ) -> Dict[str, List[Dict[str, Any]]]:
     """
     Asynchronously extracts content from all PDF files in a given directory and its subdirectories.
@@ -368,7 +353,7 @@ async def async_extract_pdfs_from_directory(
 
     for file_path in traverse_directory(directory_path, safe_mode=safe_mode):
         try:
-            extracted_content = await async_extract_pdf(file_path, safe_mode=safe_mode)
+            extracted_content = await async_extract_pdf(file_path, safe_mode=safe_mode, text=text, table=table, image=image)
             extracted_data[str(file_path.relative_to(directory_path))] = (
                 extracted_content
             )
@@ -385,7 +370,7 @@ async def async_extract_pdfs_from_directory(
 
 
 def extract_pdfs(
-    input_path: Union[str, bytes, Path], safe_mode: bool = True
+    input_path: Union[str, bytes, Path], safe_mode: bool = True, text: bool = True, table: bool = True, image: bool = True
 ) -> Union[Dict[str, Any], Dict[str, List[Dict[str, Any]]]]:
     """
     Dynamically processes either a single PDF file or all PDFs in a directory,
@@ -394,6 +379,9 @@ def extract_pdfs(
     Args:
         input_path (Union[str, bytes, Path]): Path to a PDF file, directory, or in-memory PDF bytes.
         safe_mode (bool, optional): Whether to enable safe mode for this function call. Defaults to True.
+        text (bool, optional): Whether to extract text from the PDF. Defaults to True.
+        table (bool, optional): Whether to extract tables from the PDF. Defaults to True.
+        image (bool, optional): Whether to extract images from the PDF. Defaults to True.
 
     Returns:
         Union[Dict[str, Any], Dict[str, List[Dict[str, Any]]]]:
@@ -403,40 +391,38 @@ def extract_pdfs(
     Example:
             {
                 "pdf_file_1.pdf": {
-                    "pages": [
+                    "contents": [
                         {"text": "Page 1 content", "images": [...], "tables": [...]},
                         {"text": "Page 2 content", "images": [...], "tables": [...]}
                     ]
                 },
                 "pdf_file_2.pdf": {
-                    "pages": [
+                    "contents": [
                         {"text": "Page 1 content", "images": [...], "tables": [...]}
                     ]
                 }
             }
     """
     if _is_running_async():
-        # Running in an asynchronous context, call the async version
-        return asyncio.create_task(extract_pdfs_async(input_path, safe_mode=safe_mode))
+        return asyncio.create_task(extract_pdfs_async(input_path, safe_mode=safe_mode, text=text, table=table, image=image))
     else:
-        # Running in a synchronous context, call the sync version
-        return extract_pdfs_sync(input_path, safe_mode=safe_mode)
+        return extract_pdfs_sync(input_path, safe_mode=safe_mode, text=text, table=table, image=image)
 
 
 def extract_pdfs_sync(
-    input_path: Union[str, bytes, Path], safe_mode: bool = True
+    input_path: Union[str, bytes, Path], safe_mode: bool = True, text: bool = True, table: bool = True, image: bool = True
 ) -> Union[Dict[str, Any], Dict[str, List[Dict[str, Any]]]]:
     """
     Synchronous function to process PDFs (single or directory).
     """
     if isinstance(input_path, bytes):
-        return sync_extract_pdf(input_path, safe_mode=safe_mode)
+        return sync_extract_pdf(input_path, safe_mode=safe_mode, text=text, table=table, image=image)
 
     path = validate_path(input_path, safe_mode=safe_mode)
     if path.is_dir():
-        return sync_extract_pdfs_from_directory(path, safe_mode=safe_mode)
+        return sync_extract_pdfs_from_directory(path, safe_mode=safe_mode, text=text, table=table, image=image)
     elif path.is_file():
-        return sync_extract_pdf(path, safe_mode=safe_mode)
+        return sync_extract_pdf(input_path, safe_mode=safe_mode, text=text, table=table, image=image)
     else:
         raise PDFProcessingError(
             f"Invalid input: {path} is neither a valid PDF file nor a directory."
@@ -444,19 +430,19 @@ def extract_pdfs_sync(
 
 
 async def extract_pdfs_async(
-    input_path: Union[str, bytes, Path], safe_mode: bool = True
+    input_path: Union[str, bytes, Path], safe_mode: bool = True, text: bool = True, table: bool = True, image: bool = True
 ) -> Union[Dict[str, Any], Dict[str, List[Dict[str, Any]]]]:
     """
     Asynchronous function to process PDFs (single or directory).
     """
     if isinstance(input_path, bytes):
-        return await async_extract_pdf(input_path, safe_mode=safe_mode)
+        return await async_extract_pdf(input_path, safe_mode=safe_mode, text=text, table=table, image=image)
 
     path = validate_path(input_path, safe_mode=safe_mode)
     if path.is_dir():
-        return await async_extract_pdfs_from_directory(path, safe_mode=safe_mode)
+        return await async_extract_pdfs_from_directory(path, safe_mode=safe_mode, text=text, table=table, image=image)
     elif path.is_file():
-        return await async_extract_pdf(path, safe_mode=safe_mode)
+        return await async_extract_pdf(path, safe_mode=safe_mode, text=text, table=table, image=image)
     else:
         raise PDFProcessingError(
             f"Invalid input: {path} is neither a valid PDF file nor a directory."

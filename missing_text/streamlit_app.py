@@ -42,14 +42,14 @@ def main():
                 with st.spinner("Extracting content..."):
                     pdf_content = sync_extract_pdf(uploaded_file.getvalue())
                     st.session_state.pdf_content = pdf_content
-                    st.session_state.total_pages = len(pdf_content["pages"])
+                    st.session_state.total_pages = len(pdf_content["contents"])
                 st.success(
                     "PDF processed successfully. Navigate to other tabs to view the results."
                 )
 
     with tabs[1]:
         st.header("Extracted Text")
-        if st.session_state.pdf_content and "pages" in st.session_state.pdf_content:
+        if st.session_state.pdf_content and "contents" in st.session_state.pdf_content:
             # Split the text into pages
             
             # Iterate over each page
@@ -58,8 +58,8 @@ def main():
                 col1, col2 = st.columns(2)
 
                 with col1:
-                    if "images" in st.session_state.pdf_content["pages"][i]:
-                        page_images = st.session_state.pdf_content["pages"][i]["images"]
+                    if "images" in st.session_state.pdf_content["contents"][i]:
+                        page_images = st.session_state.pdf_content["contents"][i]["images"]
                         
                         # Iterate over each image in the list
                         for j, image in enumerate(page_images):
@@ -74,7 +74,7 @@ def main():
 
                 # Column 2: Display the extracted text
                 with col2:
-                    page_text = st.session_state.pdf_content["pages"][i].get("text", "No text extracted.")
+                    page_text = st.session_state.pdf_content["contents"][i].get("text", "No text extracted.")
                     st.text_area(
                         label=f"Page {i + 1} Content",
                         value=page_text.strip(),
@@ -84,11 +84,11 @@ def main():
 
     with tabs[2]:
         st.header("Extracted Tables")
-        if st.session_state.pdf_content and "pages" in st.session_state.pdf_content:
+        if st.session_state.pdf_content and "contents" in st.session_state.pdf_content:
             # Iterate over each page
             for i in range(st.session_state.total_pages):
-                if "tables" in st.session_state.pdf_content["pages"][i]:
-                    page_tables = st.session_state.pdf_content["pages"][i]["tables"]
+                if "tables" in st.session_state.pdf_content["contents"][i]:
+                    page_tables = st.session_state.pdf_content["contents"][i]["tables"]
                     
                     # Iterate over each image in the list
                     for j, tables in enumerate(page_tables):
@@ -103,10 +103,10 @@ def main():
 
     with tabs[3]:
         st.header("Extracted Images")
-        if st.session_state.pdf_content and "pages" in st.session_state.pdf_content:
+        if st.session_state.pdf_content and "contents" in st.session_state.pdf_content:
             for i in range(st.session_state.total_pages):
-                if "images" in st.session_state.pdf_content["pages"][i]:
-                    page_images = st.session_state.pdf_content["pages"][i]["images"]
+                if "images" in st.session_state.pdf_content["contents"][i]:
+                    page_images = st.session_state.pdf_content["contents"][i]["images"]
                     for j, image in enumerate(page_images):
                         st.subheader(f"Page {i + 1}, Image {j + 1}")
                         image_data = base64.b64decode(image["image_data"])
@@ -123,10 +123,10 @@ def main():
 
     with tabs[4]:
         st.header("Image OCR")
-        if st.session_state.pdf_content and "pages" in st.session_state.pdf_content:
+        if st.session_state.pdf_content and "contents" in st.session_state.pdf_content:
             for i in range(st.session_state.total_pages):
-                if "images" in st.session_state.pdf_content["pages"][i]:
-                    page_images = st.session_state.pdf_content["pages"][i]["images"]
+                if "images" in st.session_state.pdf_content["contents"][i]:
+                    page_images = st.session_state.pdf_content["contents"][i]["images"]
                     for j, image in enumerate(page_images):
                         st.subheader(f"Page {i + 1}, Image {j + 1} OCR")
                         st.text_area(
