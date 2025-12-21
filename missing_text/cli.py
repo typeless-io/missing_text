@@ -4,6 +4,9 @@ import uvicorn
 from fastapi import FastAPI
 import os
 from dotenv import load_dotenv
+from .routers import extract
+import subprocess
+import sys
 
 # Load environment variables from .env file if it exists
 load_dotenv()
@@ -43,12 +46,33 @@ def fastapi(host, port):
     async def root():
         return {"message": "Welcome to Missing Text API"}
 
-    @app.get("/hello/{name}")
-    async def hello(name: str = "World"):
-        return {"message": hello_missing(name)}
+        # Include routers
+
+    app.include_router(extract.router)
 
     click.echo(f"Starting FastAPI server on http://{host}:{port}")
     uvicorn.run(app, host=host, port=port)
+
+
+@main.command()
+@click.option("--host", default="localhost", help="Host to run the Streamlit app on")
+@click.option("--port", default=8501, type=int, help="Port to run the Streamlit app on")
+def streamlit(host, port):
+    """Start the Missing Streamlit app"""
+    click.echo(f"Starting Missing Streamlit app on http://{host}:{port}")
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "streamlit",
+            "run",
+            "missing_text/streamlit_app.py",
+            "--server.address",
+            host,
+            "--server.port",
+            str(port),
+        ]
+    )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,10 @@
+site_name: Missing Text Documentation
+site_url: https://missingtext.ai
+theme:
+  name: material
+  font:
+    text: Nabla
+  palette:
+    scheme: slate
+    primary: black
+    accent: deep purple
