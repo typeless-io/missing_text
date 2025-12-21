@@ -108,7 +108,7 @@ def main():
                         st.image(
                             base64.b64decode(page_data["image"]),
                             caption=f"Original Page {st.session_state.current_page}",
-                            use_column_width=True,
+                            use_container_width=True,
                         )
                     else:
                         st.error("Page image could not be rendered.")
@@ -143,7 +143,7 @@ def main():
                         st.image(
                             base64.b64decode(page_image),
                             caption=f"Original Page {st.session_state.current_page}",
-                            use_column_width=True,
+                            use_container_width=True,
                         )
                     with col2:
                         st.dataframe(table_item["content"], key=f"table_pymupdf_{current_page_idx}_{i}", use_container_width=True)
@@ -172,7 +172,7 @@ def main():
                         st.image(
                             base64.b64decode(page_image),
                             caption=f"Original Page {st.session_state.current_page}",
-                            use_column_width=True,
+                            use_container_width=True,
                         )
                     with col2:
                         if "image_data" in image_item:
@@ -180,7 +180,7 @@ def main():
                             st.image(
                                 Image.open(io.BytesIO(image_bytes)),
                                 caption="Extracted Image",
-                                use_column_width=True,
+                                use_container_width=True,
                             )
                         else:
                             st.write("No image data available for this item.")
@@ -208,7 +208,7 @@ def main():
                             st.image(
                                 Image.open(io.BytesIO(image_bytes)),
                                 caption="Extracted Image",
-                                use_column_width=True,
+                                use_container_width=True,
                             )
                         else:
                             st.write("No image data available for this item.")
@@ -305,7 +305,7 @@ def main():
                                     st.image(
                                         base64.b64decode(segment["image_data"]),
                                         caption="Extracted Image",
-                                        use_column_width=True,
+                                        use_container_width=True,
                                     )
                                 content_preview = str(segment['content'])[:100]
                                 st.write(

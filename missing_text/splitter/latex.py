@@ -1,8 +1,8 @@
-"""Functions for LaTeX-based text splitting."""
+r"""Functions for LaTeX-based text splitting."""
 
 
 def latex_section_splitter(text: str, section: str = "section") -> list[str]:
-    """
+    r"""
     Splits LaTeX text by specified sectioning commands (e.g., sections, subsections).
 
     Args:
@@ -22,7 +22,7 @@ def latex_section_splitter(text: str, section: str = "section") -> list[str]:
         >>> text = "\\section{Introduction} Text here. \\section{Conclusion} More text here."
         >>> latex_section_splitter(text, "section")
         ['\\section{Introduction} Text here.', '\\section{Conclusion} More text here.']
-    """
+    r"""
     import re
 
     # Compile a regex pattern that captures the section command and its content

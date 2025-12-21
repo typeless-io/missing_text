@@ -1,7 +1,7 @@
 import pytest
 from fastapi import FastAPI
 from missing_text.routers.extract import router  # Import your FastAPI router
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from io import BytesIO
 from unittest import mock
 from unittest.mock import AsyncMock
@@ -51,7 +51,7 @@ async def test_extract_pdf_file():
         with mock.patch("pathlib.Path.exists", return_value=True):
             with mock.patch("pymupdf.open", return_value=create_mock_document()):
                 # Create an async client to send requests to the FastAPI app
-                async with AsyncClient(app=app, base_url="http://test") as client:
+                async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
                     # Send a POST request to the endpoint with the fake file content
                     files = {"file": ("fake_file.pdf", fake_pdf_bytes, "application/pdf")}
                     response = await client.post("/extract/pdf", files=files)
@@ -87,7 +87,7 @@ async def test_extract_pdf_file_with_params():
         with mock.patch("pathlib.Path.exists", return_value=True):
             with mock.patch("pymupdf.open", return_value=create_mock_document()):
                 # Create an async client to send requests to the FastAPI app
-                async with AsyncClient(app=app, base_url="http://test") as client:
+                async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
                     # Send a POST request with custom parameters to disable features
                     files = {"file": ("fake_file.pdf", fake_pdf_bytes, "application/pdf")}
                     response = await client.post(
@@ -114,7 +114,7 @@ async def test_extract_pdf_bytes(mock_pdf_bytes):
 
     # Create an async client to send requests to the FastAPI app
     with mock.patch("pymupdf.open", return_value=create_mock_document()):
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             # Send a POST request to the endpoint with the fake byte content
             response = await client.post(
                 "/extract/pdf-bytes",
@@ -148,7 +148,7 @@ async def test_extract_pdf_bytes_with_params(mock_pdf_bytes):
 
     # Create an async client to send requests to the FastAPI app
     with mock.patch("pymupdf.open", return_value=create_mock_document()):
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             # Send a POST request to the endpoint with the fake byte content
             response = await client.post(
                 f"/extract/pdf-bytes?text={text}&image={image}&table={table}&encode_page={encode_page}&segment={segment}",
@@ -192,7 +192,7 @@ async def test_extract_pdf_path_directory():
                         # Mock pymupdf.open to return the mock document
                         with mock.patch("pymupdf.open", return_value=create_mock_document()):
                             # Create an async client to send requests to the FastAPI app
-                            async with AsyncClient(app=app, base_url="http://test") as client:
+                            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
                                 # Send a POST request to the /extract/pdf-path endpoint with a directory path
                                 response = await client.post(
                                     "/extract/pdf-path?file_path=fake_directory&safe_mode=False"
@@ -242,7 +242,7 @@ async def test_extract_pdf_path_directory_with_params():
                             "pymupdf.open", return_value=create_mock_document()
                         ):
                             # Create an async client to send requests to the FastAPI app
-                            async with AsyncClient(app=app, base_url="http://test") as client:
+                            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
                                 # Send a POST request to the /extract/pdf-path endpoint with a directory path
                                 response = await client.post(
                                     "/extract/pdf-path?file_path=fake_directory&text=true&image=false&table=true"
