@@ -1,6 +1,7 @@
 # utils.py
 import json
 from decimal import Decimal
+from typing import Dict, Any
 
 
 class DecimalEncoder(json.JSONEncoder):
@@ -8,11 +9,6 @@ class DecimalEncoder(json.JSONEncoder):
         if isinstance(obj, Decimal):
             return float(obj)
         return super(DecimalEncoder, self).default(obj)
-
-
-# utils.py
-import json
-from typing import Dict, Any
 
 
 def save_extracted_content(extracted_content: Dict[str, Any], filename: str) -> None:

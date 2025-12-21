@@ -1,5 +1,4 @@
 import os
-import sys
 import uvicorn
 from fastapi import FastAPI
 from dotenv import load_dotenv
@@ -13,10 +12,7 @@ def run_fastapi(host: str = "0.0.0.0", port: int = 8000):
     """
     app = FastAPI()
 
-    from missing_text.extract.pdf import sync_extract_pdf, async_extract_pdf
     from pydantic import BaseModel
-    import base64
-    import tempfile
 
     class ExtractRequest(BaseModel):
         file_path: str = None
