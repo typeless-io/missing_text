@@ -19,7 +19,7 @@ This project uses the UV package manager. To install missing_text, follow these 
 2. Clone the repository:
 
    ```
-   git clone https://github.com/yourusername/missing_text.git
+   git clone https://github.com/typeless-io/missing_text.git
    cd missing_text
    ```
 
@@ -27,22 +27,133 @@ This project uses the UV package manager. To install missing_text, follow these 
    ```bash
    uv venv
    source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
-   uv install  # Install primary dependencies
-   uv install --group dev # Install development dependencies
+   uv pip install -r pyproject.toml  # Install primary dependencies
    ```
 
 ## Usage
 
-Here's a quick example of how to use missing_text:
+### PDF Processing
+
+The package provides powerful PDF processing capabilities with both synchronous and asynchronous options:
 
 ```python
+from missing_text.extract.pdf import sync_extract_pdf, async_extract_pdf, extract_pdfs
 
-from missing_text.hello_missing import hello_missing
-result = hello_missing()
-print(result)
+# Process a single PDF synchronously
+with open("document.pdf", "rb") as f:
+    content = sync_extract_pdf(
+        f.read(),
+        text=True,      # Extract text
+        table=True,     # Extract tables
+        image=True,     # Extract images with OCR
+        encode_page=True, # Get base64 encoded page images
+        segment=True,   # Get content segments with bounding boxes
+        zoom=2.0        # Set zoom level for page rendering (default: 2.0)
+    )
+
+# Process a PDF asynchronously
+async def process_pdf():
+    content = await async_extract_pdf("path/to/pdf", safe_mode=True)
+    print(content["text"])  # Access extracted text
+    print(content["tables"]) # Access extracted tables
+    print(content["images"]) # Access extracted images with OCR
+    print(content["pages"])  # Access page images
+    print(content["segments"]) # Access content segments
+
+# Process multiple PDFs from a directory
+results = extract_pdfs(
+    "path/to/pdf_directory",
+    safe_mode=True,
+    text=True,
+    table=True,
+    image=True
+)
 ```
 
-For more detailed usage instructions, please refer to the [documentation](docs/README.md).
+### Text Splitting
+
+The package includes various text splitting utilities for LLM context preparation:
+
+```python
+from missing_text.splitter import (
+    character_splitter,
+    sentence_splitter,
+    paragraph_splitter,
+    markdown_header_splitter,
+    json_key_splitter,
+    html_tag_attribute_splitter,
+    latex_section_splitter,
+    recursive_character_splitter,
+)
+
+# Split text by characters with overlap
+chunks = character_splitter(
+    "Your long text here",
+    chunk_size=100,
+    overlap=20
+)
+
+# Split by sentences
+sentences = sentence_splitter("Multiple sentences. Like this one. And this.")
+
+# Split markdown by headers
+sections = markdown_header_splitter(
+    "# Section 1\nContent\n# Section 2\nMore content",
+    level=1
+)
+
+# Advanced recursive splitting with overlap
+chunks = recursive_character_splitter(
+    text="Your long document text here",
+    character_size=800,
+    overlap=100,
+    delimiters=["\n\n", "\n", "[.!?]", ",", " ", ""]
+)
+```
+
+### Text Embeddings
+
+The package supports multiple embedding options:
+
+```python
+from missing_text.embed.sentence_transformers import sentence_transformer_embedder
+
+# Generate embeddings using Sentence Transformers
+texts = ["First sentence", "Second sentence", "Third sentence"]
+embeddings = sentence_transformer_embedder(
+    texts,
+    model_name="all-MiniLM-L6-v2"
+)
+```
+
+### FastAPI Integration
+
+The package includes a FastAPI server for document processing:
+
+```python
+# Start the FastAPI server
+missing fastapi --host 0.0.0.0 --port 8000
+# OR
+missing_text
+```
+
+### Streamlit UI
+
+The package includes a Streamlit interface for visual document processing:
+
+```bash
+# Start the Streamlit app
+missing streamlit --host localhost --port 8501
+```
+
+The Streamlit UI provides:
+
+- PDF upload and processing
+- Text extraction visualization
+- Table extraction with preview
+- Image extraction with OCR results
+- Content segmentation visualization with bounding boxes (optimized for viewing)
+- JSON export of extracted content
 
 ## CLI Usage
 
@@ -66,6 +177,12 @@ missing fastapi --host 0.0.0.0 --port 5000
 
 # Show help
 missing --help
+
+#The Streamlit app provides a user-friendly interface to test out the features of Missing Text. To run the Streamlit app, use the following command:
+missing streamlit
+
+# Start the Streamlit App with custom host and port
+missing streamlit --host 0.0.0.0 --port 8501
 ```
 
 The FastAPI server can be configured using environment variables or command-line arguments:
@@ -75,32 +192,15 @@ The FastAPI server can be configured using environment variables or command-line
 
 You can set these in a `.env` file in your project root or as system environment variables.
 
-Command-line arguments will override environment variables:
-
-```bash
-#
-```
-
-The FastAPI server will have two endpoints:
-
-- `/`: Returns a welcome message
-- `/hello/{name}`: Returns the result of `hello_missing(name)`
-
-You can access these endpoints in your browser or using tools like curl:
-
-```bash
-curl http://localhost:8000/
-curl http://localhost:8000/hello/Alice
-```
-
 ## Development
 
 To set up the development environment:
 
 1. Follow the installation steps above.
-2. Install development dependencies:
+2. Install primary and development dependencies:
    ```bash
-   uv pip install -r requirements-dev.txt
+   uv pip install -r pyproject.toml  # Install primary dependencies
+   uv pip install -r pyproject.toml --extra dev # Install development dependencies
    ```
 3. Install pre-commit hooks:
    ```bash
@@ -116,7 +216,7 @@ To set up the development environment:
    ```
 6. Install the package in editable mode:
    ```bash
-   uv install --editable .
+   uv pip install --editable .
    ```
 
 ## Testing
@@ -131,6 +231,12 @@ If you want to run the tests with coverage, yet to be implemented:
 
 ```bash
 pytest --cov=missing_text
+```
+
+To generate a coverage report:
+
+```bash
+pytest --cov=missing_text --cov-report=html --cov-report=term
 ```
 
 All new features should have corresponding test cases. Tests are located in the `tests/` directory.
