@@ -115,3 +115,41 @@ def test_streamlit_command_with_custom_host_and_port(mock_run, runner):
             "9000",
         ]
     )
+
+def test_fastapi_root_endpoint():
+    from click.testing import CliRunner
+    from missing_text.cli import fastapi
+    from unittest.mock import patch
+    import asyncio
+
+    runner = CliRunner()
+
+    with patch("uvicorn.run") as mock_run:
+        result = runner.invoke(fastapi)
+        assert result.exit_code == 0
+        app = mock_run.call_args[0][0]
+
+        # Test the root route manually since we have access to the app
+
+        async def run_test():
+            from httpx import AsyncClient, ASGITransport
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                res = await client.get("/")
+                assert res.json() == {"message": "Welcome to Missing Text API"}
+
+        asyncio.run(run_test())
+
+def test_cli_main_execution():
+    from missing_text.cli import main
+    import sys
+    from unittest.mock import patch
+    with patch.object(sys, "argv", ["missing", "--help"]):
+        with pytest.raises(SystemExit):
+            main()
+
+def test_cli_import_main():
+    import subprocess
+    import sys
+    result = subprocess.run([sys.executable, "-m", "missing_text.cli", "--help"], capture_output=True, text=True)
+    assert result.returncode == 0
+    assert "Usage: python -m missing_text.cli" in result.stdout

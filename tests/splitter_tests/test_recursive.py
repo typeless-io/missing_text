@@ -32,3 +32,24 @@ Teachers and coaches implicitly told us the returns were linear. "You get out," 
         "If your product is only half as good as your competitor's, you don't get half as many customers You get no customers, and you go out of business",
         "One of the most important things I didn't understand about the world when I was a child is the degree to which the returns for performance are superlinear.",
     ]
+
+def test_recursive_character_splitter_base_case():
+    from missing_text.splitter.recursive import recursive_character_splitter
+    text = "abcdefghijklmnopqrstuvwxyz"
+    # No delimiters left, splits strictly by max_size (5)
+    chunks = recursive_character_splitter(text, character_size=5, overlap=0, delimiters=[])
+    assert chunks == ["abcde", "fghij", "klmno", "pqrst", "uvwxy", "z"]
+
+def test_recursive_character_splitter_small_text_no_delims():
+    from missing_text.splitter.recursive import recursive_character_splitter
+    text = "abc"
+    # Base case where text length is less than max_size and no delimiters
+    chunks = recursive_character_splitter(text, character_size=5, overlap=0, delimiters=[])
+    assert chunks == ["abc"]
+
+def test_recursive_character_splitter_large_part():
+    from missing_text.splitter.recursive import recursive_character_splitter
+    text = "a b c d e f g"
+    # A part between delimiters is larger than max_size, forces recursive down
+    chunks = recursive_character_splitter(text, character_size=3, overlap=0, delimiters=[" "])
+    assert chunks == ["a b", "c d", "e f", "g"]

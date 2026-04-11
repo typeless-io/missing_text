@@ -271,3 +271,66 @@ async def test_extract_pdf_path_directory_with_params():
                                     # Check that tables are extracted when table=True
                                     assert "tables" in page, "'tables' should be present when table=True"
                                     assert isinstance(page["tables"], list), "'tables' should be a list"
+
+@pytest.mark.asyncio
+async def test_extract_pdf_process_pdf_exception(mock_pdf_bytes):
+    # Test error block inside process_pdf by mocking async_extract_pdf to raise an exception
+    content = mock_pdf_bytes.getvalue()
+    with mock.patch("missing_text.routers.extract.async_extract_pdf", side_effect=Exception("Test Error")):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.post(
+                "/extract/pdf-bytes",
+                headers={"Content-Type": "application/octet-stream"},
+                content=content,
+            )
+            assert response.status_code == 500
+            assert "Test Error" in response.json()["detail"]
+
+@pytest.mark.asyncio
+async def test_extract_pdf_path_generic_exception():
+    with mock.patch("missing_text.routers.extract.validate_path") as mock_val:
+        mock_val.return_value.exists.return_value = True
+        with mock.patch("missing_text.routers.extract.extract_pdfs", side_effect=Exception("Generic Error")):
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.post("/extract/pdf-path?file_path=some_path")
+                assert response.status_code == 500
+                assert "Generic Error" in response.json()["detail"]
+
+@pytest.mark.asyncio
+async def test_toggle_safe_mode():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.post("/toggle-safe-mode?enable=false&allowed_extensions=pdf&allowed_extensions=txt")
+        assert response.status_code == 200
+        assert "safe_mode_config" in response.json()
+
+@pytest.mark.asyncio
+async def test_process_pdf_large_file(mock_pdf_bytes):
+    # Simulate a file larger than FILE_SIZE_THRESHOLD
+    large_content = b"0" * (10 * 1024 * 1024 + 1)
+
+    with mock.patch("missing_text.routers.extract.run_in_threadpool", return_value={"status": "success"}):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.post(
+                "/extract/pdf-bytes",
+                headers={"Content-Type": "application/octet-stream"},
+                content=large_content,
+            )
+            assert response.status_code == 200
+            assert response.json() == {"status": "success"}
+
+@pytest.mark.asyncio
+async def test_extract_pdf_path_not_exists_trigger():
+    with mock.patch("missing_text.routers.extract.validate_path") as mock_val:
+        mock_val.return_value.exists.return_value = False
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.post("/extract/pdf-path?file_path=nonexistent.pdf")
+            assert response.status_code == 500
+            assert "Failed to process PDF" in response.json()["detail"]
+
+@pytest.mark.asyncio
+async def test_extract_pdf_path_pdf_processing_error():
+    from missing_text.extract.pdf import PDFProcessingError
+    with mock.patch("missing_text.routers.extract.validate_path", side_effect=PDFProcessingError("Validation error")):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.post("/extract/pdf-path?file_path=bad_path")
+            assert response.status_code == 400
