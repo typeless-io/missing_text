@@ -1,3 +1,5 @@
+import pytest
+from httpx import AsyncClient, ASGITransport
 from missing_text.main import run, run_fastapi
 from unittest import mock
 
@@ -21,8 +23,6 @@ def test_run_app_invalid_port():
             run()
             mock_run_fastapi.assert_called_once_with(host="localhost", port=8000)
 
-import pytest
-from httpx import AsyncClient, ASGITransport
 
 @pytest.mark.asyncio
 async def test_fastapi_root():
