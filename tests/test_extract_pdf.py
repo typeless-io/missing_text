@@ -386,6 +386,7 @@ def test_extract_tables_pandas_import_error():
         res = _extract_tables_from_page(BadPage(), 1)
         assert len(res) == 0
 
+
 def test_extract_images_pytesseract_import_error():
     from missing_text.extract.pdf import _extract_images_from_page
     import sys
@@ -397,6 +398,7 @@ def test_extract_images_pytesseract_import_error():
     with mock.patch.dict(sys.modules, {'pytesseract': None}):
         res = _extract_images_from_page(page, doc, 1)
         assert len(res) == 0
+
 
 
 
@@ -463,6 +465,7 @@ def test_traverse_directory_skip():
             with mock.patch("missing_text.extract.pdf.validate_path", side_effect=[m_val.return_value, PDFProcessingError("Skip")]):
                 res = traverse_directory("somedir")
                 assert len(res) == 0
+
 
 def test_convert_page_as_image_error():
     from missing_text.extract.pdf import _convert_page_as_image
